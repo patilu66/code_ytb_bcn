@@ -7,14 +7,14 @@ import pandas as pd
 from uuid import uuid4
 import json
 
-# Change this to your own ID
+# our own ID
 IMAGE_NAME = 'fr-spain_ytb'
 OUTPUT_DIR = os.path.join(os.getcwd(), 'output')
 ARGS_DIR = os.path.join(os.getcwd(), 'arguments')
 NUM_TRAINING_VIDEOS = 5
 WATCH_DURATION = 30
 
-# Fix for Windows - os.getuid() doesn't exist on Windows
+# for Windows - os.getuid() doesn't exist on Windows
 try:
     USERNAME = os.getuid()  # Unix/Linux
 except AttributeError:
@@ -25,20 +25,12 @@ def parse_args():
     parser.add_argument('--build', action="store_true", help='Build docker image')
     parser.add_argument('--run', action="store_true", help='Run all docker containers')
     parser.add_argument('--simulate', action="store_true", help='Only generate arguments but do not start containers')
-    parser.add_argument('--giletjaune', action="store_true", help='Run the 4 gilet jaune sockpuppets with existing configs')
-    parser.add_argument('--max-containers', default=10, type=int, help="Maximum number of concurrent containers")
-    parser.add_argument('--sleep-duration', default=60, type=int, help="Time to sleep (in seconds) when max containers are reached and before spawning additional containers")
-    parser.add_argument('--training-videos', default='data/training-videos.csv', help='CSV file with training videos')
-    parser.add_argument('--testing-videos', default='data/testing-videos.csv', help='CSV file with testing videos')
-    parser.add_argument('--training-channels', default='data/chaines_clean.csv', help='CSV file with training channels')
-    parser.add_argument('--mode', choices=['videos', 'channels'], default='channels', help='Training mode: use videos or channels')
-    parser.add_argument('--num-videos-per-channel', default=5, type=int, help='Number of popular videos to fetch per channel')
     
-    # New configurable parameters for training and search
-    parser.add_argument('--num-channels-per-ideology', default=5, type=int, help='Number of channels to select per ideology for training')
-    parser.add_argument('--search-query', default='gilet jaune', type=str, help='Search query for protest event analysis (e.g., "gilet jaune", "Black Lives Matter", "farmer protests")')
-    parser.add_argument('--max-search-results', default=10, type=int, help='Maximum number of search results to collect')
-    parser.add_argument('--max-recommendations', default=10, type=int, help='Maximum number of recommendations to collect after watching first search result')
+    # Search configuration
+    parser.add_argument('--search-query', default='gilet jaune', help='Search query to analyze')
+    parser.add_argument('--channels-per-ideology', default=5, type=int, help='Number of channels per ideology')
+    parser.add_argument('--videos-per-channel', default=5, type=int, help='Number of videos per channel')
+    parser.add_argument('--max-results', default=10, type=int, help='Maximum search results to collect')
     
     args = parser.parse_args()
     return args, parser
@@ -72,9 +64,9 @@ def max_containers_reached(client, max_containers):
     except:
         return True
 
-def get_channels_by_ideology(csv):
-    """Retrieve channels by ideology from CSV file"""
-    channels_df = pd.read_csv(csv, sep=';')
+def get_channels_by_ideology(csv_file='data/chaines_clean.csv'):
+    """Get channels organized by political ideology"""
+    channels_df = pd.read_csv(csv_file, sep=';')
     
     return {
         'Left': channels_df[channels_df['idee_pol'] == 'gauche']['channel_id'].tolist(),
