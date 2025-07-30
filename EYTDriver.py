@@ -1,6 +1,6 @@
 """
 EYTDriver - Extend youtube Driver, based on ytdriver package
-modernized with 2025 selectors (works without ytdriver)
+modernized with 2025 selectors (works without ytdriver, by redefining everything we need (for example Video class) in the same file)
 """
 from selenium.webdriver import Chrome, ChromeOptions, Firefox, FirefoxOptions
 from selenium.webdriver.firefox.service import Service

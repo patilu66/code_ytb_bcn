@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Analysis script for YouTube Sockpuppet results
-Analyzes ideological differences in search results and recommendations
 """
 
 import json

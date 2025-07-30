@@ -1,15 +1,14 @@
 # YouTube Sockpuppets for Political Ideology Analysis
 
-## 📋 Description
+## Description
 
-This project creates and trains automated "sockpuppets" (virtual accounts) on YouTube to study political ideology bias in the YTB algorithm. Each sockpuppet trains on content from specific political ideologies, then searches for protest events to analyze how YouTube's recommendation algorithm affect the results. This project replicates and extends the sockpuppet component of the study "YouTube, The Great Radicalizer? Auditing and Mitigating Ideological Biases in YouTube Recommendations" (Haroon et al., 2022), using the authors' publicly available driver to update and adapt it to the European context and to the study of protest-related content.
+This project creates and trains automated "sockpuppets" (virtual accounts) on YouTube to study political ideology bias in the YTB algorithm. Each sockpuppet trains on content from specific political ideologies, then searches for protest events to analyze how YouTube's recommendation algorithm affects the results. This project replicates and extends the sockpuppet component of the study "YouTube, The Great Radicalizer? Auditing and Mitigating Ideological Biases in YouTube Recommendations" (Haroon et al., 2022), using the authors' publicly available driver to update and adapt it to the European context and to the study of protest-related content.
 
-The system trains sockpuppets representing 4 political ideologies:
+The system trains sockpuppets representing 4 political ideologies (instead of 5 in the initial project):
 - **Left** (`gauche`) 
 - **Radical Left** (`gauche radicale`)
 - **Right** (`droite`) 
 - **Extreme Right** (`droite extrême`) 
-
 
 
 
@@ -41,15 +40,15 @@ graph TD
 
 
 
-| File | Purpose | Technology | Interactions |
+| File | Purpose | Code | Interactions |
 |------|---------|------------|--------------|
-| **`docker-api.py`** | Main orchestration system and parallel execution controller | Python + Docker API | Reads `data/chaines_clean.csv`, generates `arguments/*.json`, launches containers with `sockpuppet.py` |
+| **`docker-api.py`** | Main orchestration system and parallel execution controller | Python + Docker API | Reads `data`, generates `arguments/*.json`, launches containers with `sockpuppet.py` |
 | **`sockpuppet.py`** | Individual sockpuppet execution logic and training/search workflow | Python | Uses `EYTDriver.py`, reads channel data, executes training phases, saves results to `output/` |
 | **`EYTDriver.py`** | Modern YouTube automation driver with 2025 selectors | Selenium WebDriver | Used by `sockpuppet.py`, handles Chrome/Firefox, manages YouTube navigation and data collection |
 | **`Dockerfile`** | Container environment with headless Chrome and Python dependencies | Ubuntu + Chrome + Python | Packages entire system for isolated parallel execution |
 | **`requirements.txt`** | Python package dependencies for the entire system | pip/PyPI | Used by `Dockerfile` and local development setup |
-| **`data/chaines_clean.csv`** | Political channel database with ideology classifications | CSV Database | Read by `docker-api.py` and `sockpuppet.py` for channel selection and filtering |
-| **`examples/`** | Usage examples and testing scripts | Python Scripts | Independent examples showing different system configurations |
+| **`data`** | database with ideology classifications (channel or videos) | CSV Database | Read by `docker-api.py` and `sockpuppet.py` for channel selection and filtering |
+| **`examples/`** | Usage examples and testing scripts | Python Scripts | check if everything works |
 
 ### Differences with UC Davis projet (to finish) 
 
@@ -65,7 +64,7 @@ graph TD
 
 - General update of the project to ensure compatibility with the 2025 version of YouTube
 
-##  Installation & Setup
+##  Installation
 
 ### Prerequisites
 
@@ -95,6 +94,7 @@ The build downloads and installs:
 
 ### 3.  Structure
 
+
 ```
 code_ytb_bcn/
 ├── docker-api.py           # Main orchestration system
@@ -110,6 +110,8 @@ code_ytb_bcn/
     ├── profiles/         # Persistent Chrome profiles
     └── exceptions/       # Error logs
 ```
+
+Copy the repository 
 
 ###  Example : Gilet Jaune Protests
 
@@ -130,6 +132,8 @@ This launches 4 parallel containers that:
 ### Configurable Parameters
 
 # Farmer protests example
+
+``` bash 
 python docker-api.py --run \
   --mode channels \
   --training-channels data/chaines_clean.csv \
@@ -142,14 +146,14 @@ python docker-api.py --run \
 
 ### Parameter Reference
 
-| Parameter | Default | Description | Example Values |
+| Parameter | Default | Description |  |
 |-----------|---------|-------------|----------------|
 | `--search-query` | `"gilet jaune"` | Protest event to search for | `"gilets jaunes"` |
-| `--num-channels-per-ideology` | `5` | Random channels selected per ideology | `3-10` (depending on available channels) |
-| `--num-videos-per-channel` | `5` | Popular videos watched per channel | `2-6` (training intensity) |
-| `--max-search-results` | `10` | Search results collected | `5-20` (data quantity) |
-| `--max-recommendations` | `10` | Recommendations after first video | `5-20` (recommendation depth) |
-| `--mode` | `channels` | Training mode | `channels` (recommended) or `videos` |
+| `--num-channels-per-ideology` | `5` | Random channels selected per ideology | `10` |
+| `--num-videos-per-channel` | `5` | Popular videos watched per channel | (training intensity) |
+| `--max-search-results` | `10` | Search results collected | (data quantity) |
+| `--max-recommendations` | `10` | Recommendations after first video | (recommendation depth) |
+| `--mode` | `channels` | Training mode | `channels` or `videos` |
 | `--training-channels` | `data/chaines_clean.csv` | Channel database file | Path to CSV with ideology classifications |
 
 ### Simulation Mode (Test Without Execution)
@@ -164,14 +168,9 @@ python docker-api.py --simulate \
   --num-videos-per-channel 2
 ```
 
-Simulation mode:
-- ✅ Validates all parameters
-- ✅ Shows channel selection per ideology  
-- ✅ Generates JSON configurations
-- ❌ Does not launch Docker containers
-- ❌ Does not execute actual YouTube automation
 
-### Examples Script
+
+### Examples, for each part of the project (driver, sockpuppet, dockers)
 
 ```bash
 # See predefined examples for different protest events
@@ -252,9 +251,8 @@ Each sockpuppet generates a JSON file in `output/puppets/`:
 }
 ```
 
-## 🔧 Monitoring & Troubleshooting
 
-### Monitor Execution
+## Monitor Execution
 
 ```bash
 # Check running containers
@@ -262,32 +260,6 @@ docker ps
 
 # View container logs (replace with actual container name)
 docker logs sockpuppet_left_a1b2c3d4
-### Common Issues
-
-- **ChromeDriver version mismatch**:  
-    Ensure the ChromeDriver version matches the installed Chrome browser. Update either Chrome or ChromeDriver in the Dockerfile if needed.
-
-- **Insufficient RAM**:  
-    Running multiple containers with headless browsers requires at least 8GB RAM. Reduce the number of parallel containers if you encounter memory errors.
-
-- **Permission errors on output folders**:  
-    Make sure the `output/` and its subfolders are writable by the Docker container. Use `chmod` or adjust Docker volume mounts.
-
-- **Network connectivity problems**:  
-    Stable internet is required for YouTube automation. Check your connection and proxy/firewall settings.
-
-### Debugging Tips
-
-- Use `docker logs <container_name>` to view detailed error messages.
-- Check `output/exceptions/` for error logs generated by sockpuppet runs.
-- Validate your configuration files in `arguments/` before launching containers.
-- Run in simulation mode to verify setup without executing browser automation.
-
-### Getting Help
-
-- Review the documentation in `examples/` for usage scenarios.
-- Open an issue on the project repository with error details and logs.
-- For Docker-specific issues, consult the [Docker documentation](https://docs.docker.com/).
 
 # Check resource usage
 docker stats

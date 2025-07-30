@@ -2,7 +2,9 @@
 
 
 
-for information, here is a part of the code from the yt driver : from selenium.webdriver import Chrome, ChromeOptions, Firefox, FirefoxOptions
+#Here is the code from the yt driver (UC davis)
+
+
 from selenium.webdriver import Chrome, ChromeOptions, Firefox, FirefoxOptions
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
