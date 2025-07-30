@@ -2,16 +2,7 @@
 
 ## 📋 Description
 
-This project creates and trains automated "sockpuppets" (virtual accounts) on YouTube to study political information bubbles. Each sockpuppet trains on content from specific political ideologies, then searches for protest events to analyze how YouTube's recommendation algorithm creates different "realities" for different political orientations.
-
-## 🎯 Objective
-
-- **Study protest events** through ideology-specific YouTube recommendations
-- **Analyze information bubbles** created by recommendation algorithms
-- **Measure polarization** in content recommendations across political spectrum
-- **Collect comparative data** on how different ideologies "see" the same events
-
-## 🔍 Core Research Application
+This project creates and trains automated "sockpuppets" (virtual accounts) on YouTube to study political ideology bias in the YTB algorithm. Each sockpuppet trains on content from specific political ideologies, then searches for protest events to analyze how YouTube's recommendation algorithm affect the results. 
 
 The system trains sockpuppets representing 4 political ideologies:
 - **Left** (`gauche`) - Traditional left-wing perspective
@@ -19,11 +10,7 @@ The system trains sockpuppets representing 4 political ideologies:
 - **Right** (`droite`) - Traditional right-wing and conservative
 - **Extreme Right** (`droite extrême`) - Far-right and nationalist
 
-Each sockpuppet:
-1. **Trains** by watching videos from channels aligned with its ideology
-2. **Searches** for configurable protest events (e.g., "gilet jaune", "Black Lives Matter", "farmer protests")  
-3. **Collects** search results and recommendations
-4. **Generates** ideology-specific data for comparative analysis
+
 
 ## 🏗️ Architecture
 
@@ -35,8 +22,9 @@ Each sockpuppet:
 | **`sockpuppet.py`** | Individual sockpuppet logic and execution | Python |
 | **`eytdriver_autonomous.py`** | Modern YouTube automation driver (2025 selectors) | Selenium WebDriver |
 | **`Dockerfile`** | Container environment with headless Chrome | Ubuntu + Chrome |
-| **`data/chaines_clean.csv`** | 48 political channels classified by ideology | CSV Database |
-| **`examples.py`** | Usage examples for different protest events | Python Helper |
+| **`data/`** | data to train sockpuppets | CSV Database |
+
+*** note : the ytb dossier is dedicated to the previous code from UC Davis project. 
 
 ### System Flow
 
@@ -62,7 +50,39 @@ graph TD
     L --> M[Compare Information Bubbles]
 ```
 
-## 📦 Installation & Setup
+### File Architecture
+
+This project extends and modernizes the UC Davis YouTube recommendation research framework. Each component serves a specific purpose in the analysis pipeline:
+
+| File | Purpose | Technology | Interactions |
+|------|---------|------------|--------------|
+| **`docker-api.py`** | Main orchestration system and parallel execution controller | Python + Docker API | Reads `data/chaines_clean.csv`, generates `arguments/*.json`, launches containers with `sockpuppet.py` |
+| **`sockpuppet.py`** | Individual sockpuppet execution logic and training/search workflow | Python | Uses `EYTDriver.py`, reads channel data, executes training phases, saves results to `output/` |
+| **`EYTDriver.py`** | Modern YouTube automation driver with 2025 selectors | Selenium WebDriver | Used by `sockpuppet.py`, handles Chrome/Firefox, manages YouTube navigation and data collection |
+| **`Dockerfile`** | Container environment with headless Chrome and Python dependencies | Ubuntu + Chrome + Python | Packages entire system for isolated parallel execution |
+| **`requirements.txt`** | Python package dependencies for the entire system | pip/PyPI | Used by `Dockerfile` and local development setup |
+| **`data/chaines_clean.csv`** | Political channel database with ideology classifications | CSV Database | Read by `docker-api.py` and `sockpuppet.py` for channel selection and filtering |
+| **`examples/`** | Usage examples and testing scripts | Python Scripts | Independent examples showing different system configurations |
+
+### Project Origins
+
+This system is based on and extends the YouTube recommendation research framework from UC Davis, with significant modifications:
+
+**Original UC Davis Framework:**
+- Basic YouTube automation for recommendation collection
+- Single-threaded execution
+- Limited to video-based training
+
+**Our Extensions and Modernizations:**
+- **Parallel Docker execution** - 4 simultaneous ideological sockpuppets
+- **Modern 2025 YouTube selectors** - Updated for current YouTube interface
+- **Channel-based training** - Train on entire political channels, not just individual videos
+- **Configurable protest event analysis** - Flexible search queries and parameters
+- **Political ideology framework** - Structured 4-ideology system (Left, Radical Left, Right, Extreme Right)
+- **Enhanced Chrome handling** - Resolved profile conflicts for parallel execution
+- **French political channel database** - 48 classified French political YouTube channels
+
+##  Installation & Setup
 
 ### Prerequisites
 
@@ -71,19 +91,7 @@ graph TD
 - **Python 3.8+** with pip
 - **Stable internet connection**
 
-### 1. Clone and Setup
 
-```bash
-# Clone the repository
-git clone [repository-url]
-cd code_ytb_bcn
-
-# Install Python dependencies (optional, for examples)
-pip install pandas docker
-
-# Verify Docker installation
-docker --version
-```
 
 ### 2. Build Docker Image
 
@@ -98,18 +106,17 @@ The build downloads and installs:
 - ChromeDriver (compatible version)
 - Python environment with all dependencies
 
-### 3. Verify Data Structure
+### 3.  Structure
 
 ```
 code_ytb_bcn/
 ├── docker-api.py           # Main orchestration system
 ├── sockpuppet.py          # Individual sockpuppet logic
 ├── eytdriver_autonomous.py # YouTube automation driver
-├── examples.py            # Usage examples
 ├── Dockerfile             # Container definition
 ├── requirements.txt       # Python dependencies
 ├── data/
-│   └── chaines_clean.csv  # 48 channels by ideology
+│   └── chaines_clean.csv  # channels or videos classified 
 ├── arguments/             # Generated configs (auto-created)
 └── output/               # Results storage (auto-created)
     ├── puppets/          # Sockpuppet execution data
@@ -200,30 +207,8 @@ python examples.py
 python examples.py --execute
 ```
 
-## 📊 Data Structure
+##  Data Structure
 
-### Input: Political Channels Database
-
-`data/chaines_clean.csv` contains 48 French political YouTube channels:
-
-```csv
-Type;id;Abonné.e.s;Description;id_ytb;idee_pol;thématique;commentaire;channel_id
-Média;ARTE;4300000;Cultural documentaries;arte;gauche;Culture, Politics;;UCwI-JbGNsojunnHbFAc0M4Q
-Média;LeMonde;1200000;News and analysis;lemondefr;gauche;News, Politics;;UClKO-cGN3KND8sG6l3-dGdw
-Politique;LeFigaro;890000;Conservative news;lefigaro;droite;News, Politics;;UCp-LfOhq99NzOnUw8wzKNdw
-```
-
-**Key columns:**
-- `idee_pol`: Political ideology classification
-- `channel_id`: YouTube channel identifier  
-- `id_ytb`: YouTube handle (@arte, @lemondefr, etc.)
-- `thématique`: Content topics
-
-**Available ideologies:**
-- `gauche` (18 channels) - Left-wing: ARTE, Le Monde, France Inter, etc.
-- `droite` (11 channels) - Right-wing: Le Figaro, RTL, Europe 1, etc.
-- `droite extrême` (11 channels) - Far-right: CNews, Sud Radio, etc.  
-- `gauche radicale` (8 channels) - Far-left: Blast, Mediapart, etc.
 
 ### Output: Sockpuppet Execution Data
 
@@ -312,70 +297,6 @@ ls arguments/
 cat arguments/Left,K5le9sYdYkM,b908b734.json
 ```
 
-### Common Issues & Solutions
-
-#### Problem: Containers crash on startup
-**Cause**: Chrome profile conflicts in parallel execution
-**Solution**: Automatic unique profile generation implemented
-```python
-# Each container gets unique profile directory
-unique_suffix = f"{int(time.time())}{random.randint(1000, 9999)}"
-profile_dir = f"/app/output/profiles/{puppet_id}_{unique_suffix}"
-```
-
-#### Problem: Search queries fail with special characters  
-**Cause**: URL encoding issues with spaces and accents
-**Solution**: Proper URL encoding implemented
-```python
-from urllib.parse import quote_plus
-encoded_query = quote_plus("gilet jaune")  # Handles spaces correctly
-```
-
-#### Problem: "No channels found for ideology"
-**Cause**: CSV file format or ideology name mismatch
-**Solution**: Verify CSV structure and ideology names
-```bash
-# Check available channels per ideology
-python -c "
-import pandas as pd
-df = pd.read_csv('data/chaines_clean.csv', sep=';')
-print(df['idee_pol'].value_counts())
-"
-```
-
-#### Problem: Containers use too much memory
-**Cause**: Multiple Chrome instances in parallel
-**Solution**: Limit concurrent containers
-```bash
-python docker-api.py --run --max-containers 2  # Reduce from default 10
-```
-
-### Log Files
-
-- **Execution logs**: `docker logs [container_name]`
-- **Error exceptions**: `output/exceptions/[puppet_id]`
-- **Chrome profiles**: `output/profiles/[puppet_id]/`
-- **Results data**: `output/puppets/[puppet_id]`
-
-## 📈 Analysis & Results
-
-### Expected Output
-
-For each protest event analysis, you get:
-
-1. **4 ideology-specific datasets** (Left, Radical Left, Right, Extreme Right)
-2. **Search results comparison** showing algorithmic filtering by ideology
-3. **Recommendation bubbles** demonstrating how each ideology "sees" the event
-4. **Temporal data** tracking the complete training and search process
-
-### Sample Research Questions
-
-- **Information Bubbles**: How do search results for "gilet jaune" differ between left and right sockpuppets?
-- **Algorithmic Bias**: Which videos appear in recommendations for far-right vs far-left ideologies?
-- **Polarization Measurement**: What percentage of content is shared vs unique across political spectrum?
-- **Event Framing**: How do different ideologies receive different narratives about the same protest?
-
-### Analysis Scripts
 
 Create custom analysis scripts using the JSON output:
 
@@ -416,46 +337,4 @@ def analyze_overlap(results):
 
 analyze_overlap(results)
 ```
-
-## 🤝 Contributing
-
-### Extending for New Research
-
-1. **Add new protest events**: Modify `--search-query` parameter
-2. **Include new channels**: Update `data/chaines_clean.csv` with additional political channels
-3. **Modify training intensity**: Adjust `--num-channels-per-ideology` and `--num-videos-per-channel`
-4. **Change collection depth**: Modify `--max-search-results` and `--max-recommendations`
-
-### Technical Improvements
-
-- **New selectors**: Update `eytdriver_autonomous.py` if YouTube changes interface
-- **Additional ideologies**: Extend the 4-ideology system in `docker-api.py`
-- **Better analysis**: Create additional analysis scripts for specific research questions
-- **Performance**: Optimize Chrome resource usage for larger parallel execution
-
-## 📄 License
-
-This project is for academic research purposes. Please cite appropriately if used in academic work.
-
-## 🏷️ Technical Details
-
-### Built With
-- **Python 3.8+** with Selenium, Pandas, Docker API
-- **Google Chrome** (headless) with ChromeDriver
-- **Docker** for containerization and parallel execution
-- **Ubuntu 20.04** as container base system
-
-### Performance
-- **Memory**: ~500MB per container (4 containers = ~2GB total)
-- **Execution time**: 15-25 minutes per complete analysis
-- **Throughput**: ~100 videos watched + 40 data points collected per ideology
-- **Scalability**: Configurable parallel containers (default max: 10)
-
-### Tested On
-- Windows 10/11 with Docker Desktop
-- Linux (Ubuntu/Debian) with Docker CE  
-- macOS with Docker Desktop
-
-For questions, issues, or research collaboration, please open an issue in the repository.
-
 

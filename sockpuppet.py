@@ -1,4 +1,4 @@
-from eytdriver_autonomous import EYTDriver, Video, VideoUnavailableException
+from EYTDriver import EYTDriver, Video, VideoUnavailableException
 import sys
 import json
 from datetime import datetime

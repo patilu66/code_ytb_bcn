@@ -3,7 +3,7 @@
 Test script pour vérifier la fonction de recherche
 """
 
-from eytdriver_autonomous import EYTDriver
+from EYTDriver import EYTDriver
 import time
 
 def test_search():
