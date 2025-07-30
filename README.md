@@ -1,4 +1,4 @@
-# YouTube Sockpuppets for Political Ideology Analysis
+# YouTube Sockpuppets for protest events
 
 ## Description
 
